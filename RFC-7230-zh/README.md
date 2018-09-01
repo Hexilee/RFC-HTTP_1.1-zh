@@ -52,7 +52,7 @@
 - [RFC-7234](https://tools.ietf.org/html/rfc7234) 缓存
 - [RFC-7235](https://tools.ietf.org/html/rfc7235) 认证
 
-这份 HTTP/1.1 规范使得 [RFC-2616](https://tools.ietf.org/html/rfc2616) 及 [RFC-2145](https://tools.ietf.org/html/rfc2145) 中关于 HTTP/1.1 的部分被废弃。同时本规范还更新了之前在 [RFC-2817](https://tools.ietf.org/html/rfc2817) 中被提到的“用 CONNECT 方法建立网络隧道”，而且定义了原先在 [RFC-2818](https://tools.ietf.org/html/rfc2818) 中被非正式描述的 “https” URI 方案。
+这份 HTTP/1.1 规范使得 [RFC-2616](https://tools.ietf.org/html/rfc2616) 及 [RFC-2145](https://tools.ietf.org/html/rfc2145) 中关于 HTTP/1.1 的部分被废弃。同时本规范还更新了之前在 [RFC-2817](https://tools.ietf.org/html/rfc2817) 中被定义的“用 CONNECT 方法建立网络隧道”，而且定义了原先在 [RFC-2818](https://tools.ietf.org/html/rfc2818) 中被非正式性描述的 “https” URI 方案。
 
 HTTP 是一种用于信息系统的通用接口协议。它被设计出以暴露出独立于所提供资源类型的统一接口给客户端的方式来隐藏服务的实现细节。同样地，服务器也不需要知道客户端的任何目的：一次 HTTP 请求可以被视作独立的而非与特定的客户端类型或一连串预定的请求步骤相关。这些特性造就了一个可以高效应用于许多场景并且允许客户端和服务端的实现随着时间推移独立发展的协议。
 
