@@ -16,7 +16,7 @@
   * [x] [2.4 缓存](#24-缓存)
   * [x] [2.5 一致性和错误处理](#25-一致性和错误处理)
   * [x] [2.6 协议版本](#26-协议版本)
-  * [ ] [2.7 统一资源标识符](#27-统一资源标识符)
+  * [x] [2.7 统一资源标识符](#27-统一资源标识符)
      * [ ] [2.7.1 HTTP URI 格式](#271-http-uri-格式)
      * [ ] [2.7.2 HTTPS URI 格式](#272-https-uri-格式)
      * [ ] [2.7.3 HTTP 和 HTTPS URI 的正规化和匹配](#273-http-和-https-uri-的正规化和匹配)
@@ -239,9 +239,32 @@ HTTP 版本号由两个以 "." 隔开的数字组成。第一个数字（ "major
 
 HTTP 版本规范设计的目的是，只有在引入了不兼容的报文语构时才会升主版本号，而只有在引入了影响报文语义的变化或者为 sender 增加了额外的功能时，才会升副版本号。当然，[RFC-2068](https://tools.ietf.org/html/rfc2068) 到 [RFC-2616](https://tools.ietf.org/html/rfc2616) 之间的改变不足以升级副版本号，这份规范的版本重定义也特别地避免了影响版本号的的改变。
 
-当一个 recipient 受到了与自身所实现协议的主版本号一致，但副版本号更高的 HTTP 报文，它 **SHOULD** 把改报文当做自身可兼容的最高版本来处理。recipient 可以假定拥有更高副版本号的报文对任何主版本号相同的实现都是充分向后兼任并可以被安全处理的，只要它自身并没有表明过它支持该版本的协议。
+当一个 recipient 收到了与自身所实现协议的主版本号一致，但副版本号更高的 HTTP 报文，它 **SHOULD** 把改报文当做自身可兼容的最高版本来处理。recipient 可以假定拥有更高副版本号的报文对任何主版本号相同的实现都是充分向后兼任并可以被安全处理的，只要它自身并没有表明过它支持该版本的协议。
 
 #### 2.7 统一资源标识符
+
+统一资源标识符（ [URIs](https://tools.ietf.org/html/rfc3986) ）作为一种标识资源的手段被用于 HTTP 中。URI references 被用于表明请求目的、表示重定向、以及定义关系。
+
+有关 "URI-reference", "absolute-URI", "relative-part", 'scheme', "authority", "port", "path-abempty", "segment", "query", 和 "fragment" 的定义均源于 [URI 通用语构](https://tools.ietf.org/html/rfc3986)。"absolute-path" 规则是为了可以包含一个非空路径的协议元素定义的（这个规则与允许使用空路径的 "path-abempty" 以及不允许以 "//" 开头路径的 "path-absolute" 规则略有不同）。"partial-URI" 规则是为了能包含无 fragment 的 relative-URI 的协议元素而定义的。
+
+
+`URI-reference = <URI-reference, see`[RFC3986, Section 4.1](https://tools.ietf.org/html/rfc3986#section-4.1)\>
+`absolute-URI  = <absolute-URI, see` [RFC3986, Section 4.3](https://tools.ietf.org/html/rfc3986#section-4.3)\>
+`relative-part = <relative-part, see` [RFC3986, Section 4.2](https://tools.ietf.org/html/rfc3986#section-4.2)\>
+`scheme        = <scheme, see` [RFC3986, Section 3.1](https://tools.ietf.org/html/rfc3986#section-3.1)\>
+`authority     = <authority, see` [RFC3986, Section 3.2](https://tools.ietf.org/html/rfc3986#section-3.2)\>
+`uri-host      = <host, see ` [RFC3986, Section 3.2.2](https://tools.ietf.org/html/rfc3986#section-3.2.2)\>
+`port          = <port, see` [RFC3986, Section 3.2.3](https://tools.ietf.org/html/rfc3986#section-3.2.3)\>
+`path-abempty  = <path-abempty, see` [RFC3986, Section 3.3](https://tools.ietf.org/html/rfc3986#section-3.3)\>
+`segment       = <segment, see` [RFC3986, Section 3.3](https://tools.ietf.org/html/rfc3986#section-3.3)\>
+`query         = <query, see` [RFC3986, Section 3.4](https://tools.ietf.org/html/rfc3986#section-3.4)\>
+`fragment      = <fragment, see` [RFC3986, Section 3.5](https://tools.ietf.org/html/rfc3986#section-3.5)\>
+
+`absolute-path = 1*( "/" segment )`
+`partial-URI   = relative-part [ "?" query ]`
+
+任何一个允许 URI reference 的 HTTP 协议元素都会以 ABNF   的形式表明它被允许的 reference 形式，比如只能以相对形式（ absolute-URI ）、只能有 path 和可能的 query 成分，或者一些上述规则的组合。除非特别指明，URI references 会以相对 [effective request URI](#Section55) 的形式被解析。
+
 ##### 2.7.1 HTTP URI 格式
 ##### 2.7.2 HTTPS URI 格式
 ##### 2.7.3 HTTP 和 HTTPS URI 的正规化和匹配
