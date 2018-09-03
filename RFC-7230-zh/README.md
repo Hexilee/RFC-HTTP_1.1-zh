@@ -274,9 +274,12 @@ HTTP 版本规范设计的目的是，只有在引入了不兼容的报文语构
 
 `partial-URI   = relative-part [ "?" query ]`
 
-任何一个允许 URI reference 的 HTTP 协议元素都会以 ABNF   的形式表明它被允许的 reference 形式，比如只能以相对形式（ absolute-URI ）、只能有 path 和可能的 query 成分，或者一些上述规则的组合。除非特别指明，URI references 会以相对 [effective request URI](#Section55) 的形式被解析。
+任何一个允许 URI reference 的 HTTP 协议元素都会以 ABNF   的形式表明它被允许的 reference 形式，比如只能以绝对形式（ absolute-URI ）、只有 path 和可能的 query 成分（貌似与 URI reference 的定义产生了矛盾？），或者一些上述规则的组合。除非特别指明，URI references 会以相对 [effective request URI](#Section55) 的形式被解析。
 
 ##### 2.7.1 HTTP URI 格式
+
+"http" URI 格式
+
 ##### 2.7.2 HTTPS URI 格式
 ##### 2.7.3 HTTP 和 HTTPS URI 的正规化和匹配
 
