@@ -249,18 +249,29 @@ HTTP 版本规范设计的目的是，只有在引入了不兼容的报文语构
 
 
 `URI-reference = <URI-reference, see`[RFC3986, Section 4.1](https://tools.ietf.org/html/rfc3986#section-4.1)\>
+
 `absolute-URI  = <absolute-URI, see` [RFC3986, Section 4.3](https://tools.ietf.org/html/rfc3986#section-4.3)\>
+
 `relative-part = <relative-part, see` [RFC3986, Section 4.2](https://tools.ietf.org/html/rfc3986#section-4.2)\>
+
 `scheme        = <scheme, see` [RFC3986, Section 3.1](https://tools.ietf.org/html/rfc3986#section-3.1)\>
+
 `authority     = <authority, see` [RFC3986, Section 3.2](https://tools.ietf.org/html/rfc3986#section-3.2)\>
+
 `uri-host      = <host, see ` [RFC3986, Section 3.2.2](https://tools.ietf.org/html/rfc3986#section-3.2.2)\>
+
 `port          = <port, see` [RFC3986, Section 3.2.3](https://tools.ietf.org/html/rfc3986#section-3.2.3)\>
+
 `path-abempty  = <path-abempty, see` [RFC3986, Section 3.3](https://tools.ietf.org/html/rfc3986#section-3.3)\>
+
 `segment       = <segment, see` [RFC3986, Section 3.3](https://tools.ietf.org/html/rfc3986#section-3.3)\>
+
 `query         = <query, see` [RFC3986, Section 3.4](https://tools.ietf.org/html/rfc3986#section-3.4)\>
+
 `fragment      = <fragment, see` [RFC3986, Section 3.5](https://tools.ietf.org/html/rfc3986#section-3.5)\>
 
 `absolute-path = 1*( "/" segment )`
+
 `partial-URI   = relative-part [ "?" query ]`
 
 任何一个允许 URI reference 的 HTTP 协议元素都会以 ABNF   的形式表明它被允许的 reference 形式，比如只能以相对形式（ absolute-URI ）、只能有 path 和可能的 query 成分，或者一些上述规则的组合。除非特别指明，URI references 会以相对 [effective request URI](#Section55) 的形式被解析。
