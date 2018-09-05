@@ -278,7 +278,30 @@ HTTP 版本规范设计的目的是，只有在引入了不兼容的报文语构
 
 ##### 2.7.1 HTTP URI 格式
 
-"http" URI 格式
+"http" URI 格式被定义的目的是标识与他们存在联系的，监听指定端口 [TCP](https://tools.ietf.org/html/rfc793) 连接的潜在 HTTP origin server。（原文 "The "http" URI scheme is hereby defined for the purpose of minting
+   identifiers according to their association with the hierarchical
+   namespace governed by a potential HTTP origin server listening for
+   TCP ([ [RFC0793] ](https://tools.ietf.org/html/rfc793)) connections on a given port." 这段可能存在更好的翻译？）
+   
+```
+http-URI = "http:" "//" authority path-abempty [ "?" query ]
+                [ "#" fragment ]
+
+```
+
+"http" URI 中由包含 [host](https://tools.ietf.org/html/rfc3986#section-3.2.2) 并可能附带 TCP 端口的 authority 来标识 origin server。分级的 path 和可选的 query 则作为在 origin server 的名字空间中定位潜在目标资源的标识。可选的 fragment 可作为定位二级资源的间接标识，它是独立于 URI scheme 的，如同 [Section 3.5 of RFC-3986](https://tools.ietf.org/html/rfc3986#section-3.5) 中所定义的那样。
+
+一个 Sender **MUST NOT** 创建一个没有 Host 标识的 HTTP URI。收到这种 URI 的 Recipient **MUST** 把它作为无效 URI 拒绝处理。
+
+如果提供的 Host 标识是一个 IP 地址，则 origin server 监听在此 IP 地址的指定 TCP 端口上。如果 host 是一个注册名（域名？），这个注册名就是一个通过像 DNS 这样的名字解析服务来找 origin server IP 地址的间接标识。如果端口号为空或者没有指定，则默认 TCP 端口 80（万维网服务的保留端口）。
+
+要记住，有着指定 authority 的 URI 的存在并不意味着这个 Host 和 Port 总有一个 HTTP Server 在监听。每个人都可以创建一个 URI。Authority 决定的是谁有权利、有权威性地响应一个请求并返回目标资源。注册名和 IP 地址被赋予的天然特性，基于对指定 host 和 port 是否存在 HTTP Server 的控制，创造了联合的命名空间。在 [Section 9.1]() 中我们可以看到关于建立权威性的安全考量。
+
+当一个 "http" URI 在某些语境下被用于访问指定的资源，一个客户端 **MAY** 尝试访问此资源，通过把 Host 解析为 IP 地址、在指定端口建立 TCP 连接，然后发送含有 [URI 标识数据](#Section5) 的[请求报文](#3-消息格式)。如果该 Server 用一个非过渡的 HTTP 响应报文来回复某请求，像 [Section 6 of RFC-7231](https://tools.ietf.org/html/rfc7231#section-6) 中描述的那样，则可以认为这是一次对该客户端请求的具有权威性的响应。
+
+虽然 HTTP 独立于传输层协议，当 "http" scheme 特指基于 TCP 的服务，因为名称代理（猜测是指 authority，即名字空间？）依赖 TCP 来建立权威的链接。基于其它底层连接协议的 HTTP 服务一般会使用其它的 URI scheme 作为标识，就像 "https" scheme 被用于传递有端对端加密需求的资源。其它的协议可能也会被用于提供对 "http" 标识资源的访问 —— 它只是一种基于 TCP 的特定的，广为人知的接口。
+
+URI 通用语法中的 authority 也含有一个 deprecated 的 userinfo 子字段 [Section 3.2.1 of RFC-3986](https://tools.ietf.org/html/rfc3986#section-3.2.1) 以便于在 URI 中包含用户认证信息。某些实现充分地利用了 userinfo 字段来进行认证信息的内部配置，比如命令调用中的选项、配置文件、或者书签列表，即使如此这样的使用可能会暴露用户的标识或者密码。一个 Sender **MUST NOT** 创建 useinfo 子字段（以及它的 "@"）当一个 HTTP URI references 在一个报文中作为请求目标或者头字段的值。在利用一个从不被信任来源收到的 HTTP URI references 之前，该 recipient **SHOULD** 解析其中的 userinfo 字段并把它作为一种错误来处理。userinfo 字段可能被用于混淆 authority 以发起网络钓鱼攻击。
 
 ##### 2.7.2 HTTPS URI 格式
 ##### 2.7.3 HTTP 和 HTTPS URI 的正规化和匹配
