@@ -1,4 +1,4 @@
-### 超文本传输协议（ HTTP/1.1 ）：消息语构和路由
+### 超文本传输协议（ HTTP/1.1 ）：报文语构和路由
 
 #### 摘要
 
@@ -45,7 +45,7 @@
 
 本篇文档是系统性定义 HTTP/1.1 规范的系列文档中的第一份：
 
-- [RFC-7230](https://tools.ietf.org/html/rfc7230) 消息语构和路由
+- [RFC-7230](https://tools.ietf.org/html/rfc7230) 报文语构和路由
 - [RFC-7231](https://tools.ietf.org/html/rfc7231) 语义和内容
 - [RFC-7232](https://tools.ietf.org/html/rfc7232) 条件请求
 - [RFC-7233](https://tools.ietf.org/html/rfc7233) 范围请求
