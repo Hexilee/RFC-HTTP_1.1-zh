@@ -17,8 +17,8 @@
   * [x] [2.5 一致性和错误处理](#25-一致性和错误处理)
   * [x] [2.6 协议版本](#26-协议版本)
   * [x] [2.7 统一资源标识符](#27-统一资源标识符)
-     * [ ] [2.7.1 HTTP URI 格式](#271-http-uri-格式)
-     * [ ] [2.7.2 HTTPS URI 格式](#272-https-uri-格式)
+     * [x] [2.7.1 HTTP URI 格式](#271-http-uri-格式)
+     * [x] [2.7.2 HTTPS URI 格式](#272-https-uri-格式)
      * [ ] [2.7.3 HTTP 和 HTTPS URI 的正规化和匹配](#273-http-和-https-uri-的正规化和匹配)
 * [ ] [3. 消息格式](#3-消息格式)
   * [ ] [3.1 起始行](#31-起始行)
@@ -278,7 +278,7 @@ HTTP 版本规范设计的目的是，只有在引入了不兼容的报文语构
 
 ##### 2.7.1 HTTP URI 格式
 
-"http" URI 格式被定义的目的是标识与他们存在联系的，监听指定端口 [TCP](https://tools.ietf.org/html/rfc793) 连接的潜在 HTTP origin server。（原文 "The "http" URI scheme is hereby defined for the purpose of minting
+"http" URI 格式被定义的目的是根据监听指定端口 [TCP](https://tools.ietf.org/html/rfc793) 连接的潜在 HTTP origin server 来建立具有层级命名空间的标识符。（原文 "The "http" URI scheme is hereby defined for the purpose of minting
    identifiers according to their association with the hierarchical
    namespace governed by a potential HTTP origin server listening for
    TCP ([ [RFC0793] ](https://tools.ietf.org/html/rfc793)) connections on a given port." 这段可能存在更好的翻译？）
@@ -304,7 +304,23 @@ http-URI = "http:" "//" authority path-abempty [ "?" query ]
 URI 通用语法中的 authority 也含有一个 deprecated 的 userinfo 子字段 [Section 3.2.1 of RFC-3986](https://tools.ietf.org/html/rfc3986#section-3.2.1) 以便于在 URI 中包含用户认证信息。某些实现充分地利用了 userinfo 字段来进行认证信息的内部配置，比如命令调用中的选项、配置文件、或者书签列表，即使如此这样的使用可能会暴露用户的标识或者密码。一个 Sender **MUST NOT** 创建 useinfo 子字段（以及它的 "@"）当一个 HTTP URI references 在一个报文中作为请求目标或者头字段的值。在利用一个从不被信任来源收到的 HTTP URI references 之前，该 recipient **SHOULD** 解析其中的 userinfo 字段并把它作为一种错误来处理。userinfo 字段可能被用于混淆 authority 以发起网络钓鱼攻击。
 
 ##### 2.7.2 HTTPS URI 格式
+
+"https" URI 格式被定义的目的是根据监听指定端口被 [TLS](https://tools.ietf.org/html/rfc5246) 加密的 [TCP](https://tools.ietf.org/html/rfc793) 连接的潜在 HTTP origin server 来建立具有层级命名空间的标识符。
+
+所有在上文中列举到的有关 HTTP scheme 的要求也同样适用于 HTTPS scheme，唯二的例外就是，TCP 端口缺省时的默认值是 443 而非 80，以及 user agent **MUST** 确保与 origin server 的连接在发送第一个 HTTP 请求之前是端对端强加密的。
+
+```
+https-URI = "https:" "//" authority path-abempty [ "?" query ]
+                 [ "#" fragment ]
+```
+   
+要划重点的是，HTTPS URI scheme 同时基于 TLS 和 TCP 来建立连接。通过 HTTPS scheme 来访问的的资源并不与 HTTP scheme 共享，即使他们的资源标识指向同一个 authority（同一个 host 且监听在同一个 TCP 端口）。他们是不同的命名空间并且被认为是不同的 origin servers。然而，被定义作用于整个 host 域的 HTTP 扩展，比如 [Cookie protocol](https://tools.ietf.org/html/rfc6265)，可以允许一个服务提供的信息被匹配为同一个主机域组的其它服务使用。
+
+访问一个 HTTPS 标识资源的过程定义在 [RFC-2818](https://tools.ietf.org/html/rfc2818) 中。
+
 ##### 2.7.3 HTTP 和 HTTPS URI 的正规化和匹配
+
+
 
 ### 3. 消息格式
 #### 3.1 起始行
