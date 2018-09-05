@@ -19,7 +19,7 @@
   * [x] [2.7 统一资源标识符](#27-统一资源标识符)
      * [x] [2.7.1 HTTP URI 格式](#271-http-uri-格式)
      * [x] [2.7.2 HTTPS URI 格式](#272-https-uri-格式)
-     * [ ] [2.7.3 HTTP 和 HTTPS URI 的正规化和匹配](#273-http-和-https-uri-的正规化和匹配)
+     * [x] [2.7.3 HTTP 和 HTTPS URI 的正规化和匹配](#273-http-和-https-uri-的正规化和匹配)
 * [ ] [3. 消息格式](#3-消息格式)
   * [ ] [3.1 起始行](#31-起始行)
      * [ ] [3.1.1 请求行](#311-请求行)
@@ -320,8 +320,18 @@ https-URI = "https:" "//" authority path-abempty [ "?" query ]
 
 ##### 2.7.3 HTTP 和 HTTPS URI 的正规化和匹配
 
+因为 HTTP 和 HTTPS schemes 遵从于 URI 通用语构，所以其 URIs 的正规化和匹配都可以参照定义在 [Section 6 of RFC-3986](https://tools.ietf.org/html/rfc3986#section-4.3) 中的算法，使用上面提到的每个 scheme 的默认描述。
+   
+如果 URI 中的端口等于该 scheme 的默认端口，则其标准形式就是忽略 port 子字段。当一个 OPTIONS 请求的请求目标没有使用 absolute form，一个空的 path 字段与 absolute path 的 "/" 等同，所以它的正规形式就是使用 "/" 作为 path。scheme 和 host 都是不区分大小写的，但常见为小写；其它的成分在匹配时都是区分大小写的。不在保留字符集中的字符等同于它们的百分号编码的的八进制数：标准形式就是将他们解码（可参阅 [Section 2.1 and 2.2 of RFC-3986](https://tools.ietf.org/html/rfc3986)）。
 
+比如，下列三个 URIs 是等同的
 
+```
+ http://example.com:80/~smith/home.html
+ http://EXAMPLE.com/%7Esmith/home.html
+ http://EXAMPLE.com:/%7esmith/home.html
+``` 
+ 
 ### 3. 消息格式
 #### 3.1 起始行
 ##### 3.1.1 请求行
