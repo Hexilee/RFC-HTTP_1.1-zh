@@ -20,9 +20,9 @@
      * [x] [2.7.1 HTTP URI 格式](#271-http-uri-格式)
      * [x] [2.7.2 HTTPS URI 格式](#272-https-uri-格式)
      * [x] [2.7.3 HTTP 和 HTTPS URI 的正规化和匹配](#273-http-和-https-uri-的正规化和匹配)
-* [ ] [3. 消息格式](#3-消息格式)
-  * [ ] [3.1 起始行](#31-起始行)
-     * [ ] [3.1.1 请求行](#311-请求行)
+* [x] [3. 消息格式](#3-消息格式)
+  * [x] [3.1 起始行](#31-起始行)
+     * [x] [3.1.1 请求行](#311-请求行)
      * [ ] [3.1.2 状态行](#312-状态行)
   * [ ] [3.2 头字段](#32-头字段)
      * [ ] [3.2.1 字段的可扩展性](#321-字段的可扩展性)
@@ -333,8 +333,63 @@ https-URI = "https:" "//" authority path-abempty [ "?" query ]
 ``` 
  
 ### 3. 消息格式
+   
+所有的 HTTP/1.1 报文都由 start-line（起始行）开始，然后紧跟着与 [Internet Message Format](https://tools.ietf.org/html/rfc5322) 格式类似的字节流：零个或多个头字段（统称为 "headers" 或 "header section"），一个空行标志着 header section 的结束，紧接着是可能存在的 message body（报文主体）。
+
+```
+HTTP-message   = start-line
+                 *( header-field CRLF )
+                 CRLF
+                 [ message-body ]
+
+```
+   
+解析 HTTP 报文的通常步骤是：读取 start-line 作为一个结构体，读出每一个头字段为一张哈希表，之后再利用已经解析到的数据来判断是否存在 message body。如果存在，则把它当做字节流读入，直到读入字节数等于 message body 的长度或者连接关闭。
+
+一个 recipient **MUST** 把 HTTP 报文作为一串以 [US-ASCII](https://tools.ietf.org/html/rfc7230#ref-USASCII) 的超集编码的字节。把 HTTP 报文作为 Unicode 字符流而无视编码将因为不同的字符串处理库对待含有 LF(%x0A) 的非法多字节字符有不同的处理方法而导致安全漏洞。只有在协议元素已经从报文中解析出来以后，比如在某个头字段的值（该头字段已经被解析，比如存入了一张哈希表），基于字符串的解析器才是安全的。
+
+一个 HTTP 报文可以在进行增量处理或者转发下游时作为 stream（流）来解析。当然，recipients 不能依赖报文分片的增量运输，因为一些 HTTP 的具体实现会为了网络效率、安全检查或者有效载荷转换而缓冲或者延迟报文转发。
+
+一个 Sender **MUST NOT** 在 start-line 和第一个头字段之间发送空格。在 start-line 和第一个头字段之间收到空格的 recipient **MUST** 要么拒绝处理此报文，要么忽略以空格开头的行（即忽略第一行，然后把下一行作为第一行，直到收到一个有效的头字段或者整个 header section 结束）。
+
+这种空格的存在可能是想尝试欺骗 server，使其忽略这个头字段或者把这一行之后当做一个新的请求来处理，这些都可能会导致安全漏洞，如果请求链上的其它实现对同样的信息作出了不同的解释。同样，这种空格如果出现在响应报文中可能会被一些 clients 忽略或导致其它的 clients 停止解析。
+
 #### 3.1 起始行
+
+一个 HTTP 报文既可以是从 client 到 server 的请求报文，也可以是 server 到 client 的响应报文。在语构上，这两种报文唯二的区别之一是 start-line：请求报文是 request-line（请求行）而响应报文是 status-line（状态行），而另一个区别就是计算 message body 的算法不同 [Section 3.3](#33-消息体)。
+
+在理论上，一个 client 可以接收请求而一个 server 也可以接收响应，辨别他们全凭 start-line；但事实上，servers 会被实现为只接收请求（收到响应会被认为是未知或者不合法的请求方法），同样 clients 被实现为只接收响应。
+
+```
+start-line     = request-line / status-line
+```   
+
 ##### 3.1.1 请求行
+
+一个 request-line（请求行）以一个 method token 开始，紧随其后的是一个单空格（SP）、request-target（请求目标）、另一个单空格（SP）、协议版本，最后以 CRLF 结尾。
+
+```
+request-line   = method SP request-target SP HTTP-version CRLF
+```
+
+method token 表示对目标资源进行操作的请求方法，它是区分大小写的。
+
+```
+method         = token
+```
+
+规范中定义的请求方法可以在 [Section 4 of RFC-7231](https://tools.ietf.org/html/rfc7231#section-4) 中找到，后面还有关于 HTTP 方法注册和定义新方法的考量信息。
+
+request-target 表示应用此请求的目标资源，如同 [Section 5.3]() 中所定义的那样。
+
+接受者一般把 request-line 根据空格分成三部分解析（参考 [Section 3.5](#35-消息解析的鲁棒性)），因为这三个字段内都不允许出现空格。不幸的是，一些 user agent 错误地编码或者排除在超文本中找到的空格，导致这些非法字符混入 request-target 中而被发送。
+
+接收到非法 request-line 之后 **SHOULD** 要么返回一个 400（Bad Request）错误，要么返回一个 301（Moved Permanently）以适当编码后的 request-target 重定向。一个 recipient **SHOULD NOT** 尝试去自动纠正而不返回重定向，因为非法的 request-line 可能会被故意用来绕过请求链上的安全过滤器。
+
+HTTP 没有在 request-line 的长度上施加任何预定义的限制，如同 [Section 2.5](#25-一致性和错误处理) 中所描述的那样。一个 server 收到一个比它实现的任何方法都要长的请求方法时 **SHOULD** 返回 501（Not Implemented）状态码。一个 server 收到一个比它所期望的任何 URI 都要长的 request-target 时 **MUST** 返回 414（URI Too Long）status code（可参阅 [Section 6.5.12 of RFC-7231](https://tools.ietf.org/html/rfc7231#section-6.5.12)）。
+
+在实际操作中，可以发现各种各样的对 request-line 的临时限制。我们 **RECOMMENDED** 所有的 HTTP senders 和 recipients 最少支持 8000 个字节长度的 request-line。
+
 ##### 3.1.2 状态行
 #### 3.2 头字段
 ##### 3.2.1 字段的可扩展性
