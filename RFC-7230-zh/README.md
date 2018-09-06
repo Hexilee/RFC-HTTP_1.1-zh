@@ -391,6 +391,25 @@ HTTP 没有在 request-line 的长度上施加任何预定义的限制，如同 
 在实际操作中，可以发现各种各样的对 request-line 的临时限制。我们 **RECOMMENDED** 所有的 HTTP senders 和 recipients 最少支持 8000 个字节长度的 request-line。
 
 ##### 3.1.2 状态行
+
+响应报文的第一行是 status-line（状态行），由协议版本、一个单空格（SP)、状态码、另一个空格（SP)、一个可能为空的状态码文本描述、一个 CRLF 依次排列构成。
+
+```
+status-line = HTTP-version SP status-code SP reason-phrase CRLF
+```
+
+状态码由三位十进制整数构成，用于描述 server 尝试理解并满足 client 相应请求的结果。剩下的响应报文将根据状态码被定义的语义而被解析。可参阅 [Section 6 of RFC 7231](https://tools.ietf.org/html/rfc7231#section-6) 来获取状态码的语义信息，包括状态码的类别（由以一个数字决定）、本规范定义的状态码、有关新状态码定义的考量以及 IANA 注册。
+
+```
+status-code    = 3DIGIT
+```
+
+reason-phrase 元素存在的唯一目的就是给状态码提供文本描述，基本上是因为早期的互联网应用协议多采用可交互式文本客户端。一个 client **SHOULD** 忽略 reason-phrase 的内容。
+
+```
+reason-phrase  = *( HTAB / SP / VCHAR / obs-text )
+```
+
 #### 3.2 头字段
 ##### 3.2.1 字段的可扩展性
 ##### 3.2.2 字段顺序
