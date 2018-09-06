@@ -411,6 +411,24 @@ reason-phrase  = *( HTAB / SP / VCHAR / obs-text )
 ```
 
 #### 3.2 头字段
+
+每个头字段都由一个不区分大小写的字段名、一个冒号（:）、一个可选的空格、字段值、另一个可选的空格依次排列构成。
+
+```
+header-field   = field-name ":" OWS field-value OWS
+
+field-name     = token
+field-value    = *( field-content / obs-fold )
+field-content  = field-vchar [ 1*( SP / HTAB ) field-vchar ]
+field-vchar    = VCHAR / obs-text
+
+obs-fold       = CRLF 1*( SP / HTAB )
+               ; obsolete line folding
+               ; see Section 3.2.4
+```     
+
+字段名让响应的字段值有了该头字段所定义的语义。比如，Date 头字段被定义于 [Section 7.1.1.2 of RFC 7231](https://tools.ietf.org/html/rfc7231#section-7.1.1.2) ，它表示着 HTTP 报文的创建时间戳。
+
 ##### 3.2.1 字段的可扩展性
 ##### 3.2.2 字段顺序
 ##### 3.2.3 空白
