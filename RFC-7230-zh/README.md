@@ -27,9 +27,9 @@
   * [x] [3.2 头字段](#32-头字段)
      * [x] [3.2.1 字段的可扩展性](#321-字段的可扩展性)
      * [x] [3.2.2 字段顺序](#322-字段顺序)
-     * [ ] [3.2.3 空白](#323-空白)
-     * [ ] [3.2.4 字段解析](#324-字段解析)
-     * [ ] [3.2.5 字段限制](#325-字段限制)
+     * [x] [3.2.3 空白](#323-空白)
+     * [x] [3.2.4 字段解析](#324-字段解析)
+     * [x] [3.2.5 字段限制](#325-字段限制)
      * [ ] [3.2.6 字段值的组成成分](#326-字段值的组成成分)
   * [ ] [3.3 消息体](#33-消息体)
      * [ ] [3.3.1 Transfer-Encoding](#331-transfer-encoding)
@@ -388,7 +388,7 @@ request-target 表示应用此请求的目标资源，如同 [Section 5.3]() 中
 
 HTTP 没有在 request-line 的长度上施加任何预定义的限制，如同 [Section 2.5](#25-一致性和错误处理) 中所描述的那样。一个 server 收到一个比它实现的任何方法都要长的请求方法时 **SHOULD** 返回 501（Not Implemented）状态码。一个 server 收到一个比它所期望的任何 URI 都要长的 request-target 时 **MUST** 返回 414（URI Too Long）status code（可参阅 [Section 6.5.12 of RFC-7231](https://tools.ietf.org/html/rfc7231#section-6.5.12)）。
 
-在实际操作中，可以发现各种各样的对 request-line 的临时限制。我们 **RECOMMENDED** 所有的 HTTP senders 和 recipients 最少支持 8000 个字节长度的 request-line。
+在实际操作中，可以发现各种各样的对 request-line 的特定限制。我们 **RECOMMENDED** 所有的 HTTP senders 和 recipients 最少支持 8000 个字节长度的 request-line。
 
 ##### 3.1.2 状态行
 
@@ -453,7 +453,7 @@ obs-fold       = CRLF 1*( SP / HTAB )
 
 本规范使用了三条规则来标识线性空格的使用：OWS (optional whitespace), RWS (required whitespace), BWS ("bad" whitespace) 。
 
-OWS 规则表示可能会存在零个或多个线性空格。出于提高协议元素的可读性的目的，一个 sender **SHOULD** 在 OWS 的位置使用单空格；否则，一个 sender **SHOULD NOT** 生成 OWS，除非出于就绪报文（即待发送的报文）过滤时修正不合法或不需要的协议元素的需求。
+OWS 规则表示可能会存在零个或多个线性空格。出于提高协议元素的可读性的目的，一个 sender **SHOULD** 在 OWS 的位置使用单空格；否则，一个 sender **SHOULD NOT** 生成 OWS，除非出于就绪报文（即待发送的报文）过滤时修正无效或不需要的协议元素的需求。
 
 RWS 规则表示需要至少一个线性空格来分隔字段的 tokens。一个 sender **SHOULD** 在 RWS 的位置生成单空格。 
 
@@ -470,9 +470,30 @@ BWS            = OWS
 
 ##### 3.2.4 字段解析
 
+报文解析使用一种通用算法，与特定的头字段名无关。特定字段值的内容在报文解析的下一阶段之前都不会被解析（通常在整个 header section 都已经被处理了）。所以，本规范不会像前几个版本一样使用 ABNF 规则来定义每一对 “Field-Name: Field Value”。取而代之的是，我们会根据每一个注册的字段名的 ABNF 规则来定义响应字段值的有效语法（即在字段值被通用字段解析器从 header section 提取出来之后）。
 
+头字段名和冒号之间不允许出现空格。在以前，以不同方法的处理此类空格导致请求路由和处理响应时存在安全漏洞。一个 server **MUST** 拒绝任何收到的，在头字段和冒号之间存在空格的请求报文并返回 400（Bad Request）状态码。一个 proxy **MUST** 在转发响应报文到下游时移除此类空格。
+
+一个字段值的前后都有 OWS；字段值之前有一个单空格可以增加人的可读性。字段值的开头结尾都不能存在空格：第一个非空格字节之前和最后一个非空格字节之后的的空格在从头字段中解析字段值的时候应当被解析器移除。
+
+由于历史原因，HTTP 头字段值可以被延长为多行，通过在每一个额外行前面加上至少一个空格或水平 tab（obs-fold）。本规范弃用了不在 message/http media type（[Section 8.3.1]()）中的 line folding。一个 sender **MUST NOT** 生成一个包含 line folding 的报文（即，不存在能匹配 obs-fold 规则的头字段值）除非该报文中包含 message/http media type 的头字段。
+
+一个 server如果收到了非 message/http media type ，但匹配了 obs-fold 规则的头字段值，它 **MUST** 要么拒绝该报文并返回 400（Bad Request），最好附带一份说明来解释这个已经被废弃的 line folding 无法被接受；要么在解析该字段值或转发下游之前，使用一个或多个空格来替换每个收到的 obs-fold。
+
+一个 proxy 或 gateway 如果收到含有非 message/http media type ，但匹配了 obs-fold 规则的头字段值的响应报文，它 **MUST** 要么丢弃此报文并返回 502（Bad Gateway），最好附带一份说明来解释这个已经被废弃的 line folding 无法被接受；要么在解析该字段值或转发下游之前，使用一个或多个空格来替换每个收到的 obs-fold。
+
+一个 user agent 如果收到含有非 message/http media type ，但匹配了 obs-fold 规则的头字段值的响应报文，它 **MUST** 在解析该字段值之前使用一个或多个空格来替换每个收到的 obs-fold。
+
+由于历史原因，HTTP 曾允许字段文本内容使用 [ISO-8859-1 字符集](https://tools.ietf.org/html/rfc7230#ref-ISO-8859-1) ，其它字符集必须使用 [RFC-2047](https://tools.ietf.org/html/rfc2047) 编码。但在实践中，大多数的 HTTP 头字段值只使用 [US-ASCII 字符集](https://tools.ietf.org/html/rfc7230#ref-USASCII) 的子集。新定义的头字段 **SHOULD** 限制它们的字段值使用 US-ASCII。一个 recipient **SHOULD** 把字段内容中使用其它字符集的字节（obs-text）当做 opaque data（透明数据）来对待。
 
 ##### 3.2.5 字段限制
+
+HTTP 并没有对每个头字段或者整个 header section 预定义任何长度限制，如同 [Section2.5](#25-一致性和错误处理) 中所描述的那样。但在实践中我们可以发现各种对一些特定头字段长度的特别限制，常常由该字段的语义而定。
+
+收到一个或多个过长（超出预期长度）的请求头字段的 server **MUST** 返回一个合适的 4xx（Client Error）状态码。忽略此类头字段可能会造成服务器端漏洞并增加 request smuggling attacks（[Section 9.5]()）发生的风险。
+
+一个 client **MAY** 丢弃或者截断过长的响应头字段，如果该字段的语义允许我们可以在不改变报文结构和响应语义的情况下安全地忽略被丢弃的值。
+
 ##### 3.2.6 字段值的组成成分
 #### 3.3 消息体
 ##### 3.3.1 Transfer-Encoding
