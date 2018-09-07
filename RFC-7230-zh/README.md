@@ -30,7 +30,7 @@
      * [x] [3.2.3 空白](#323-空白)
      * [x] [3.2.4 字段解析](#324-字段解析)
      * [x] [3.2.5 字段限制](#325-字段限制)
-     * [ ] [3.2.6 字段值的构成](#326-字段值的构成)
+     * [x] [3.2.6 字段值的构成](#326-字段值的构成)
   * [ ] [3.3 消息体](#33-消息体)
      * [ ] [3.3.1 Transfer-Encoding](#331-transfer-encoding)
      * [ ] [3.3.2 Content-Length](#332-content-length)
@@ -496,7 +496,43 @@ HTTP 并没有对每个头字段或者整个 header section 预定义任何长�
 
 ##### 3.2.6 字段值的构成
 
+大部分 HTTP 头字段值使用被空格或其他分隔符隔开的常见语法结构定义（token、quoted-string、和 comment）。分隔符集合是 US-ASCII 可见字符集中不能出现在 token 中的子集（DQUOTE 和 “(),/:;\<\=\>?@[\\]{}”）。
 
+```
+token          = 1*tchar
+
+tchar          = "!" / "#" / "$" / "%" / "&" / "'" / "*"
+               / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
+               / DIGIT / ALPHA
+               ; any VCHAR, except delimiters
+```
+
+双引号围起来的文本字符串会被解析为单个值。
+
+```
+quoted-string  = DQUOTE *( qdtext / quoted-pair ) DQUOTE
+qdtext         = HTAB / SP /%x21 / %x23-5B / %x5D-7E / obs-text
+obs-text       = %x80-FF
+```
+
+Comments can be included in some HTTP header fields by surrounding
+   the comment text with parentheses.  Comments are only allowed in
+   fields containing "comment" as part of their field value definition.
+
+注释允许以括号括起的形式被包含在头字段中。注释只被允许出现在字段值定义中包含 “comment” 字段里。
+
+```
+comment        = "(" *( ctext / quoted-pair / comment ) ")"
+ctext          = HTAB / SP / %x21-27 / %x2A-5B / %x5D-7E / obs-text
+```
+
+反斜杠（“\”）可以在 quoted-string 或者 comment 结构中用作一种 single-octet quoting mechanism（单字节转义机制，应该就是指转义？）。处理 quoted-string 值的 recipients **MUST** 把 quoted-pair 替换为反斜杠后面的字符来处理。
+
+```
+quoted-pair    = "\" ( HTAB / SP / VCHAR / obs-text )
+```
+   
+一个 sender **SHOULD NOT** 在 quoted-string 中生成 quoted-pair 除非有必要在字符串中转义 DQUOTE 和 backslash。一个 sender **SHOULD NOT** 在 comment 中生成 quoted-pair 除非有必要在 comment 中转义括号【“(” 和 “)”】和 backslash。
 
 #### 3.3 消息体
 ##### 3.3.1 Transfer-Encoding
