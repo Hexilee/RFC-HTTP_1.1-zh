@@ -453,9 +453,25 @@ obs-fold       = CRLF 1*( SP / HTAB )
 
 本规范使用了三条规则来标识线性空格的使用：OWS (optional whitespace), RWS (required whitespace), BWS ("bad" whitespace) 。
 
+OWS 规则表示可能会存在零个或多个线性空格。出于提高协议元素的可读性的目的，一个 sender **SHOULD** 在 OWS 的位置使用单空格；否则，一个 sender **SHOULD NOT** 生成 OWS，除非出于就绪报文（即待发送的报文）过滤时修正不合法或不需要的协议元素的需求。
 
+RWS 规则表示需要至少一个线性空格来分隔字段的 tokens。一个 sender **SHOULD** 在 RWS 的位置生成单空格。 
+
+BWS 规则只在表示因历史原因而在语法上允许的 OWS 而被使用。一个 sender **MUST NOT** 在报文中生成 BWS。一个 recipient **MUST** 在解读该协议元素之前解析并移除这样的 BWS。
+
+```
+OWS            = *( SP / HTAB )
+               ; optional whitespace
+RWS            = 1*( SP / HTAB )
+               ; required whitespace
+BWS            = OWS
+               ; "bad" whitespace
+```
 
 ##### 3.2.4 字段解析
+
+
+
 ##### 3.2.5 字段限制
 ##### 3.2.6 字段值的组成成分
 #### 3.3 消息体
