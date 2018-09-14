@@ -31,7 +31,7 @@
      * [x] [3.2.4 字段解析](#324-字段解析)
      * [x] [3.2.5 字段限制](#325-字段限制)
      * [x] [3.2.6 字段值的构成](#326-字段值的构成)
-  * [ ] [3.3 报文主体](#33-报文主体)
+  * [x] [3.3 报文主体](#33-报文主体)
      * [ ] [3.3.1 Transfer-Encoding](#331-transfer-encoding)
      * [ ] [3.3.2 Content-Length](#332-content-length)
      * [ ] [3.3.3 报文主体的长度](#333-报文主体的长度)
@@ -536,7 +536,17 @@ quoted-pair    = "\" ( HTAB / SP / VCHAR / obs-text )
 
 #### 3.3 报文主体
 
+一个 HTTP 报文的 message body（报文主体，如果有的话）被用来承载该请求或相应的 payload body（有效载荷主体）。一般来说报文主体等同于有效载荷，除非该报文使用了 transfer coding（传输编码），如同 [Section 3.3.1](#331-transfer-encoding) 中描述的那样。
 
+```
+message-body = *OCTET
+```
+
+这条规则适用于报文中允许报文主体的情况，无论是在请求时还是相应时。
+
+请求中存在消息主体的标识是 Content-Length 或 Transfer-Encoding 头字段。请求报文的构成独立于请求方法的语义，即使该方面没有定义任何有关消息体使用的内容。
+
+响应中是否含有报文主体取决于它所响应请求的请求方法和该响应的状态码（[Section 3.1.1](#312-状态行)）。对 HEAD 请求方法（[Section 4.3.2 of RFC-7231](https://tools.ietf.org/html/rfc7231#section-4.3.2)）的响应不能包含报文主体，因为与其相关的头字段（比如 Transfer-Encoding, Content-Length 等）一旦出现也只能表示，当该请求方法为 GET（[Section 4.3.1 of RFC-7231](https://tools.ietf.org/html/rfc7231#section-4.3.1)）时该头字段的值。对 CONNECT 请求方法（[Section 4.3.6 of RFC-7231](https://tools.ietf.org/html/rfc7231#section-4.3.6)）的 2xx（ Successful ）响应要切换到 tunnel mode（隧道模式）而不能含有消息主体。所有的 1xx（ Informational ），204（ No Content ），和 304（ Not Modified ）响应都不能含有消息主体。其它所有的响应都含有消息主体，虽然主体的长度可能为0。
 
 ##### 3.3.1 Transfer-Encoding
 ##### 3.3.2 Content-Length
