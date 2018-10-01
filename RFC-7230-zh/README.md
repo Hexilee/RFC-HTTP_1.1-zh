@@ -550,7 +550,7 @@ message-body = *OCTET
 Transfer-Encoding = 1#transfer-coding
 ```
   
-`Transfer-Encoding` 类似于在 `MIME` 中被用于在7位传输服务（ [RFC2045, Section 6](https://tools.ietf.org/html/rfc2045#section-6) ）上安全传输二进制数据的 `Content-Transfer-Encoding` 字段。当然，想要在能正确处理 8 位字符编码的传输协议上保证安全传输则需要注重不同的关键点。对 `HTTP` 来说，`Transfer-Encoding` 主要是用来准确地划分动态生成的有效负荷，以及区分出那些仅用于提升传输效率和安全性而非出于所选资源的特点才使用的有效载荷编码。
+`Transfer-Encoding` 类似于在 `MIME` 中被用于在7位传输服务（ [RFC2045, Section 6](https://tools.ietf.org/html/rfc2045#section-6) ）上安全传输二进制数据的 `Content-Transfer-Encoding` 字段。当然，想要在能正确处理 8 位字符编码的传输协议上保证安全传输则需要注重不同的关键点。对 `HTTP` 来说，`Transfer-Encoding` 主要是用来准确地划分动态生成的有效载荷，以及区分出那些仅用于提升传输效率和安全性而非出于所选资源的特点才使用的有效载荷编码。
 
 一个 `recipient` **MUST** 能解析 [`chunked`](#Section41) 传输编码，因为该编码在有效载荷主体大小无法预知时的报文构成中扮演着极其重要的角色。一个 `sender` **MUST NOT** 对一个报文主体使用多次 `chunked`（即不允许分块一个已经被分块的报文）。如果一个请求的有效载荷体除了 `chunked` 以外使用了其它的传输编码，那该 `sender` **MUST** 使用 `chunked` 作为最后一次编码以确保报文的正确形成。如果一个响应的有效载荷体除了 `chunked` 以外使用了其它的传输编码，那么该 `sender` **MUST** 要么使用 `chunked` 作为最后一次编码，要么使用关闭连接的方式来终止该报文。
 
@@ -560,9 +560,11 @@ Transfer-Encoding = 1#transfer-coding
 Transfer-Encoding: gzip, chunked
 ```
 
-表示该有效负荷主体在形成报文主体时先使用了 `gzip` 编码压缩然后再使用 `chunked` 编码进行分片。
+表示该有效载荷主体在形成报文主体时先使用了 `gzip` 编码压缩然后再使用 `chunked` 编码进行分片。
 
-不像 `Content-Encoding`（ [Section 3.1.2.1 of RFC7231](https://tools.ietf.org/html/rfc7231#section-3.1.2.1) ），`Transfer-Encoding` 是
+与 `Content-Encoding`（ [Section 3.1.2.1 of RFC7231](https://tools.ietf.org/html/rfc7231#section-3.1.2.1) ）不同，`Transfer-Encoding` 是报文的属性而非内容的属性，而且请求/响应链上的任何一个 `recipient` **MAY** 按照传输编码来解码报文主体或者使用额外的传输编码，当然 `Transfer-Encoding` 的字段值也应发生相应的改变。关于编码参数的额外信息可由本篇规范以外定义的其它头字段提供。
+
+对一个 `HEAD` 请求的响应或者对一个 `GET` 请求的 `304(Not Modified)` 响应都 **MAY** 含有 `Transfer-Encoding` 头字段，虽然它们都不包含报文主体，但该头字段可以表示当该请求是一个非条件 `GET`（`unconditional GET`）时
 
 ##### 3.3.2 Content-Length
 ##### 3.3.3 报文主体的长度
