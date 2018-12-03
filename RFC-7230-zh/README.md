@@ -32,7 +32,7 @@
      * [x] [3.2.5 字段限制](#325-字段限制)
      * [x] [3.2.6 字段值的构成](#326-字段值的构成)
   * [x] [3.3 报文主体](#33-报文主体)
-     * [ ] [3.3.1 `Transfer-Encoding`](#331-transfer-encoding)
+     * [x] [3.3.1 `Transfer-Encoding`](#331-transfer-encoding)
      * [ ] [3.3.2 `Content-Length`](#332-content-length)
      * [ ] [3.3.3 报文主体的长度](#333-报文主体的长度)
   * [ ] [3.4 处理不完整的消息](#34-处理不完整的消息)
@@ -556,7 +556,11 @@ Transfer-Encoding: gzip, chunked
 
 对一个 `HEAD` 请求的响应或者对一个 `GET` 请求的 `304(Not Modified)` 响应都 **MAY** 含有 `Transfer-Encoding` 头字段，虽然它们都不包含报文主体，但该头字段可以表示当该请求是一个非条件 `GET`（`unconditional GET`）时报文主体将会使用的传输编码。当然，由于响应链上的任何 `receipient`（包括 `origin server` ）都可以把不需要的传输编码移除，本规范不对这种标识作任何要求。
 
+任何 `server` **MUST NOT** 在任何状态码为 `1xx (Informational)` or `204 (No Content)` 的响应中发送 `Transfer-Encoding` 头字段。任何 `server` **MUST NOT** 在任何状态码为 `2xx (Successful)` 的对 `CONNECT` 请求（ [Section 4.3.6 of RFC7231](https://tools.ietf.org/html/rfc7231#section-4.3.6) ）的响应中发送 `Transfer-Encoding` 头字段。
 
+`Transfer-Encoding` 头字段添加于 `HTTP/1.1`。我们大致可以认为只有仅支持 `HTTP/1.0` 的具体实现会无法理解怎样去处理使用了传输编码的有效载荷。任何 `client` **MUST NOT** 发送含有 `Transfer-Encoding` 的请求，除非它知道 `server` 能处理 `HTTP/1.1`（或更高版本）的请求；这样的信息可能来源于用户配置或者先前收到的响应报文。任何 `server` **MUST NOT** 发送包含 `Transfer-Encoding` 的响应，除非对应的请求表明了协议版本为 `HTTP/1.1`（或更高版本）。
+
+任何收到传输编码无法理解的的报文的 `server` 都 **SHOULD** 返回一个 `501 (Not Implement)` 响应。
 
 ##### 3.3.2 Content-Length
 ##### 3.3.3 报文主体的长度
